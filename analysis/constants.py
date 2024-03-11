@@ -1,0 +1,1 @@
+DATA_DIRECTORY = '/Users/emielzyde/Coding projects/formula-1-analysis/f1_data'
