@@ -1,3 +1,5 @@
+from typing import NoReturn
+
 import pandas as pd
 import plotly.graph_objs as go
 
@@ -135,10 +137,14 @@ def construct_driver_standings_data() -> pd.DataFrame:
     return merged_data
 
 
-def plot_standings_data_over_time(standings_data: pd.DataFrame, year: int, standings_data_type: StandingsDataType):
+def plot_standings_data_over_time(
+    standings_data: pd.DataFrame,
+    year: int,
+    standings_data_type: StandingsDataType,
+) -> NoReturn:
     """
-    Plots standings data (e.g. constructor standings, driver standings) over the course of any
-    given season
+    Plots standings data (e.g. constructor standings, driver standings) over the course
+    of any given season
 
     Parameters
     ----------
@@ -169,15 +175,19 @@ def plot_standings_data_over_time(standings_data: pd.DataFrame, year: int, stand
     fig.show()
 
 
-def calculate_date_at_which_season_is_decided(standings_data: pd.DataFrame, year: int):
+def calculate_race_at_which_season_is_decided(
+    standings_data: pd.DataFrame,
+    year: int,
+) -> str:
     """
-    Calculates the earliest date at which a season is decided. A season is decided if
+    Calculates the earliest race at which a season is decided. A season is decided if
     nobody can overtake the leader in the standings, even on the assumption that the
     leader scores 0 points going forward and the closest challenger scores all available
-    points (including the fastest lap points)
+    points
 
     Note, as of a few seasons ago, we need to take account of the points available in
-    the sprint races
+    the sprint races. We also need to account for the fastest lap points, which were
+    (re-)introduced in 2019.
 
     Parameters
     ----------
@@ -189,8 +199,10 @@ def calculate_date_at_which_season_is_decided(standings_data: pd.DataFrame, year
 
     Returns
     -------
-
+    str
+        The race at which the season was decided
     """
+    race_name = ''
     sprint_results_data = drop_empty_columns(load_sprint_results_data())
     results_data = drop_empty_columns(load_results_data())
     races_data = drop_empty_columns(load_races_data())
@@ -201,6 +213,7 @@ def calculate_date_at_which_season_is_decided(standings_data: pd.DataFrame, year
         left_on=RACE_ID_STR,
         right_on=RACE_ID_STR,
     ).rename(columns={'name': 'race_name'})
+
     results_and_races_data = pd.merge(
         results_data,
         races_data[[RACE_ID_STR, 'year', 'name', 'date']],
@@ -209,23 +222,67 @@ def calculate_date_at_which_season_is_decided(standings_data: pd.DataFrame, year
     ).rename(columns={'name': 'race_name'})
 
     standings_data_for_year = standings_data[standings_data['year'] == year]
-    sprints_data_for_year = sprints_and_races_data[sprints_and_races_data['year'] == year]
-    results_data_for_year = results_and_races_data[results_and_races_data['year'] == year]
+    sprints_data_for_year = sprints_and_races_data[
+        sprints_and_races_data['year'] == year
+    ]
+    results_data_for_year = results_and_races_data[
+        results_and_races_data['year'] == year
+    ]
 
-    max_points_per_sprint = sprints_data_for_year.groupby('raceId')['points'].max().reset_index().rename(columns={'points': 'sprint_points'})
-    max_points_per_race = results_data_for_year.groupby('raceId')['points'].max().reset_index().rename(columns={'points': 'race_points'})
+    max_points_per_sprint = (
+        sprints_data_for_year
+        .groupby('raceId')['points']
+        .max()
+        .reset_index()
+        .rename(columns={'points': 'sprint_points'})
+    )
+    max_points_per_race = (
+        results_data_for_year
+        .groupby('raceId')['points']
+        .max()
+        .reset_index()
+        .rename(columns={'points': 'race_points'})
+    )
+
+    # Account for the sprint points for each race
+    if year >= 2019:
+        sorted_max_points_per_race = sorted(
+            max_points_per_race['race_points'].unique())[::-1]
+        second_highest_points = sorted_max_points_per_race[1]
+        if sorted_max_points_per_race[0] == sorted_max_points_per_race[1] + 1:
+            max_points_per_race['race_points'] = (
+                max_points_per_race['race_points']
+                .apply(lambda x: x + 1 if x == second_highest_points else x)
+            )
 
     unique_races_in_year = sorted(standings_data_for_year['raceId'].unique())
     for race in unique_races_in_year:
-        standings_data_after_race = standings_data_for_year[standings_data_for_year['raceId'] == race]
+        standings_data_after_race = standings_data_for_year[
+            standings_data_for_year['raceId'] == race
+        ]
         max_sprint_points_after_race =max_points_per_sprint[max_points_per_sprint['raceId'] > race]['sprint_points'].sum()
         max_points_after_race = max_points_per_race[max_points_per_race['raceId'] > race]['race_points'].sum()
-        total_points_after_race = max_sprint_points_after_race + max_points_after_race
+        max_total_points_after_race = (
+            max_sprint_points_after_race + max_points_after_race
+        )
 
-        max_standings_after_race = standings_data_after_race['points'].max()
-        second_highest_standings_after_race = standings_data_after_race['points'].sort_values(ascending=False).iloc[1]
+        highest_standings_after_race = standings_data_after_race['points'].max()
+        second_highest_standings_after_race = (
+            standings_data_after_race['points']
+            .sort_values(ascending=False)
+            .iloc[1]
+        )
 
-        if max_standings_after_race > second_highest_standings_after_race + total_points_after_race:
+        is_season_decided = (
+            highest_standings_after_race
+            > second_highest_standings_after_race + max_total_points_after_race
+        )
+        if is_season_decided:
             race_name = races_data[races_data['raceId'] == race]['name']
-            print(f'The world championship in {year} was decided at the {race_name.iloc[0]}')
+            print(
+                f'The world championship in {year} was decided at the '
+                f'{race_name.iloc[0]}'
+            )
             break
+
+    return race_name
