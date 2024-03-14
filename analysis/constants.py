@@ -1,1 +1,1 @@
-DATA_DIRECTORY = '/Users/emielzyde/Coding projects/formula-1-analysis/f1_data'
+DATA_DIRECTORY = '/Users/emielzyde/python_personal/formula_1_analysis/data'
