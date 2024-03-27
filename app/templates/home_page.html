@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<center>
+    <h2>Welcome to the Formula 1 Simulation and Analysis App</h2>
+
+    <h2>Mode Selection</h2>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.mode.label }}<br>
+            {{ form.mode(size=15) }}
+        <br><br>
+        <p>{{ form.submit() }}</p>
+    </form>
+</center>
+{% endblock %}
