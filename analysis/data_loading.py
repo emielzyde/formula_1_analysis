@@ -12,6 +12,7 @@ CONSTRUCTOR_RESULTS_DATA_FILE = 'constructor_results.csv'
 CONSTRUCTOR_STANDINGS_DATA_FILE = 'constructor_standings.csv'
 DRIVERS_DATA_FILE = 'drivers.csv'
 DRIVER_STANDINGS_FILE = 'driver_standings.csv'
+LAP_TIMES_FILE = 'lap_times.csv'
 QUALIFYING_DATA_FILE = 'qualifying.csv'
 RESULTS_DATA_FILE = 'results.csv'
 RACES_DATA_FILE = 'races.csv'
@@ -75,3 +76,8 @@ def load_sprint_results_data():
         Path(DATA_DIRECTORY) / SPRINT_RESULTS_DATA_FILE,
         encoding=ENCODING,
     )
+
+
+@lru_cache(maxsize=1)
+def load_lap_times():
+    return pd.read_csv(Path(DATA_DIRECTORY) / LAP_TIMES_FILE, encoding=ENCODING)

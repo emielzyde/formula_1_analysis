@@ -13,12 +13,11 @@ from .data_loading import (
     load_sprint_results_data,
 )
 from .enums import StandingsDataType
+from constants import DRIVER_ID_STR, RACE_ID_STR
 
 EMPTY_SYMBOL = '\\N'
 EMPTY_SYMBOL_THRESHOLD = 0.05
 CONSTRUCTOR_ID_STR = 'constructorId'
-DRIVER_ID_STR = 'driverId'
-RACE_ID_STR = 'raceId'
 
 
 def drop_empty_columns(data: pd.DataFrame) -> pd.DataFrame:
