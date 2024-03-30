@@ -1,11 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import SelectField, SubmitField
+from wtforms import SelectField, StringField, SubmitField
+from wtforms.validators import DataRequired
 
 from simulation.enums import RaceName
 
 
 class ModeSelectionForm(FlaskForm):
-    modes = ['Simulation', 'Historical Analysis']
+    modes = ['Simulation', 'Historical Analysis', 'Chatbot']
     mode_choices = [tuple([mode, mode]) for mode in modes]
     mode = SelectField('Mode', choices=modes)
     submit = SubmitField('Submit selection!')
@@ -21,3 +22,9 @@ class SimulationSelectionForm(FlaskForm):
     year = SelectField('Year', choices=year_choices)
 
     submit = SubmitField('Submit selection!')
+
+
+class ChatBotForm(FlaskForm):
+    api_key = StringField('API Key', validators=[DataRequired()])
+    query = StringField('Query', validators=[DataRequired()])
+    submit = SubmitField('Submit query!')
