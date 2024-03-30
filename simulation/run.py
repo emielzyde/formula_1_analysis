@@ -195,7 +195,7 @@ def plot_simulation(
         ]
     )
 
-    fig.show()
+    return fig
 
 
 def run_simulation(race: RaceName, reference_season: int):
@@ -212,4 +212,8 @@ def run_simulation(race: RaceName, reference_season: int):
 
     reference_lap_times = load_reference_lap_times(race=race, season=reference_season)
     calculate_gaps_to_first(lap_times_data=reference_lap_times)
-    plot_simulation(reference_lap_times, number_of_drivers=5, variable_to_plot=PlottingVariable.gap_to_first)
+    return plot_simulation(
+        reference_lap_times,
+        number_of_drivers=5,
+        variable_to_plot=PlottingVariable.gap_to_first,
+    )

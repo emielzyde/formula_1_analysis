@@ -1,7 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
+<head lang="en">
+    <meta charset="utf-8" />   <!--It is necessary to use the UTF-8 encoding with plotly graphics to get e.g. negative signs to render correctly -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+</head>
+<body>
 <center>
     <h2>Welcome to the Formula 1 Simulation Home Page</h2>
-    <h3>Let's get to simulating</h3>
-</center>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.race.label }}<br>
+            {{ form.race }}
+        <br><br>
+            {{ form.year.label }}<br>
+            {{ form.year }}
+        <br><br>
+        <p>{{ form.submit() }}</p>
+    </form>
+
+    {{ fig }}
+    </center>
 {% endblock %}
